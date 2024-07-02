@@ -166,7 +166,7 @@ class CombinedPlotter(Plotter):
             ax.set_aspect("auto")
 
         # ATLAS logo with internal label
-        mplhep.atlas.text(ax=axs[0], loc=0, fontsize=22,)# text="Internal")
+        mplhep.atlas.text(ax=axs[0], loc=0, fontsize=22,) #text="Internal")
 
         # CME, lumi and higgs mass
         ax.text(
@@ -762,7 +762,7 @@ class SeparatePlotter(Plotter):
             columnspacing=1.5,
         )
 
-        mplhep.atlas.text(ax=ax, loc=4, fontsize=18,)# text="Internal")
+        mplhep.atlas.text(ax=ax, loc=4, fontsize=18,) # text="Internal")
 
         ax.text(
             -0.38,
