@@ -84,7 +84,7 @@ def plot_correlation_matrix(corr_mat, labels, output_file):
         cmap="RdBu",
         extent=(-0.5, n_labels - 0.5, n_labels - 0.5, -0.5),
     )
-    mplhep.atlas.text(text="Internal", loc=0, ax=ax)
+    mplhep.atlas.text(loc=0, ax=ax,) # text="Internal",)
 
     for spine in ax.spines.values():
         spine.set_linewidth(TICK_LINEWIDTH)
