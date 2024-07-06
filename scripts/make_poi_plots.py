@@ -31,7 +31,6 @@ Notes:
 """
 
 
-
 current_date = datetime.datetime.now().strftime(
     "%d_%m_%y"
 )  # for appending date to filename
@@ -47,7 +46,7 @@ font = fm.FontProperties(family="sans-serif", weight="bold", size=14)
 
 def read_results(config, fit_key, channel=None):
     """Read the results from the config file and return them as a dictionary."""
-    SCALING_FACTOR = 1.003700781
+    SCALING_FACTOR = 1.003700781  # needed to scale to correct Higgs mass ()
     labels = []
     bestfit = []
     error = []
@@ -103,7 +102,7 @@ class Plotter:
             0.1397,
             0.1582,
             0.1757,
-            0.0988, # for symmetric, refer to below for the asymmetric values
+            0.0988,  # for symmetric, refer to below for the asymmetric values
         ]
         self.INC_THEORY_UP = 0.0680
         self.INC_THEORY_DOWN = 0.0988
@@ -142,15 +141,24 @@ class CombinedPlotter(Plotter):
         for i in range(3):
             if i == 0:
                 axs[i].text(
-                    -0.52, 5.9, labels[0], fontsize=21, #weight="bold", style="italic"
+                    -0.44,
+                    5.9,
+                    labels[0],
+                    fontsize=21,  # weight="bold", style="italic"
                 )
             if i == 1:
                 axs[i].text(
-                    -0.39, 5.9, labels[1], fontsize=21, #weight="bold", style="italic"
+                    -0.31,
+                    5.9,
+                    labels[1],
+                    fontsize=21,  # weight="bold", style="italic"
                 )
             else:
                 axs[2].text(
-                    -2.45, 5.9, labels[2], fontsize=21, #weight="bold", style="italic"
+                    -2.33,
+                    5.9,
+                    labels[2],
+                    fontsize=21,  # weight="bold", style="italic"
                 )
             self.plot_single_result(
                 axs[i],
@@ -166,11 +174,11 @@ class CombinedPlotter(Plotter):
             ax.set_aspect("auto")
 
         # ATLAS logo with internal label
-        mplhep.atlas.text(ax=axs[0], loc=0, fontsize=22,) #text="Internal")
+        mplhep.atlas.text(ax=axs[0], loc=0, fontsize=22, text="Internal")
 
         # CME, lumi and higgs mass
         ax.text(
-            -23.8,
+            -23.3,
             7.35,
             r"$\sqrt{s}\, =\, 13\,TeV,\, 140\, fb^{-1},\,m_{H}=125.09\, \text{GeV}$",
             fontsize=20,
@@ -355,7 +363,7 @@ class CombinedPlotter(Plotter):
             ax.text(
                 x_max + 0.75,
                 y_pos[k],
-                f"{results_full['bestfit'][k]:.2f}",
+                f"{results_full['bestfit'][k]: >5.2f}",  # if instances of negative values, >5.2f will ensure the alignment
                 fontsize=21,
                 weight="bold",
                 verticalalignment="center",
@@ -390,7 +398,7 @@ class CombinedPlotter(Plotter):
             ax.text(
                 x_max + 0.75,
                 inclusive_y_pos,
-                f"{inclusive_full['bestfit'][k]:.2f}",
+                f"{inclusive_full['bestfit'][k]: >5.2f}",
                 fontsize=21,
                 weight="bold",
                 verticalalignment="center",
@@ -399,7 +407,7 @@ class CombinedPlotter(Plotter):
                 x_max + 1.75,
                 inclusive_y_pos,
                 f"+ {inclusive_full['up'][k]:.2f}\n - {inclusive_full['down'][k]:.2f}",
-                fontsize=14,
+                fontsize=15,
                 weight="bold",
                 verticalalignment="center",
                 multialignment="center",
@@ -408,7 +416,7 @@ class CombinedPlotter(Plotter):
                 x_max + 2.70,
                 inclusive_y_pos,
                 f" + {inclusive_stat['up'][k]:.2f}\n -  {inclusive_stat['down'][k]:.2f}",
-                fontsize=14,
+                fontsize=15,
                 verticalalignment="center",
                 multialignment="left",
             )
@@ -416,11 +424,18 @@ class CombinedPlotter(Plotter):
                 x_max + 3.65,
                 inclusive_y_pos,
                 f" + {inc_syst_err_up[k]:.2f}\n -  {inc_syst_err_down[k]:.2f}",
-                fontsize=14,
+                fontsize=15,
                 verticalalignment="center",
                 multialignment="left",
             )
-        ax.plot([1, 1], [ax.get_ylim()[0], n_pois - 0.2], "--", color="grey", alpha=0.6, zorder=0)
+        ax.plot(
+            [1, 1],
+            [ax.get_ylim()[0], n_pois - 0.2],
+            "--",
+            color="grey",
+            alpha=0.6,
+            zorder=0,
+        )
         ax.set_xlim([x_min - 0.5, x_max + 5.0])
         ax.set_ylim([-1.8, n_pois + 1.2])
         ax.tick_params(axis="both", which="major", pad=14, labelsize=12)
@@ -481,7 +496,8 @@ class SeparatePlotter(Plotter):
         self.output_format = output_format
 
     def plot(self):
-        for i in range(3):
+        channels = ["Combined", "1l", "2l"]
+        for i, channel in enumerate(channels):
             fig, ax = plt.subplots(figsize=(14, 8))
             self.plot_single_result(
                 ax,
@@ -489,6 +505,7 @@ class SeparatePlotter(Plotter):
                 self.fit_results[i * 2 + 1],
                 self.inclusive_results[i * 2],
                 self.inclusive_results[i * 2 + 1],
+                channel,
             )
 
             plt.subplots_adjust(left=0.28, right=0.90, top=0.90, bottom=0.15)
@@ -506,15 +523,12 @@ class SeparatePlotter(Plotter):
                 self.save_plot(fig, f"{filename}.png")
 
     def plot_single_result(
-        self, ax, results_full, results_stat, inclusive_full, inclusive_stat
+        self, ax, results_full, results_stat, inclusive_full, inclusive_stat, channel
     ):
         n_pois = len(results_full["labels"])
         spacing_factor = 1.05
         y_pos = np.arange(0, n_pois * spacing_factor, spacing_factor)[::-1]
         inclusive_y_pos = -1.1
-        # line_width_full = 2.0
-        # line_width_stat = 15.0
-        # line_width_syst = 8.0
 
         line_width_full = 3.0
         line_width_stat = 17.0
@@ -636,21 +650,28 @@ class SeparatePlotter(Plotter):
             fmt="o",
             color=self.colors[2],
             capsize=8,
-            #capthick=0.2,
+            # capthick=0.2,
             elinewidth=line_width_full,
             markeredgewidth=markeredgewidth,
             zorder=3,
         )
 
         ax.text(x_max + 1.62, n_pois - 0.10, "Total", fontsize=22, weight="bold")
-        ax.text(x_max + 2.7, n_pois - 0.10, "( Stat.", fontsize=20)
-        ax.text(x_max + 3.5, n_pois - 0.10, "Syst. )", fontsize=20)
 
+        if channel == "Combined" or channel == "1l":
+            ax.text(x_max + 2.7, n_pois - 0.10, "( Stat.", fontsize=20)
+            ax.text(x_max + 3.5, n_pois - 0.10, "Syst. )", fontsize=20)
+        else:
+            ax.text(x_max + 2.7, n_pois - 0.10, "( Stat.", fontsize=20)
+            ax.text(x_max + 3.8, n_pois - 0.10, "Syst. )", fontsize=20)
+
+        x_offset_values = x_max + (0.40 if channel == "2l" else 0.85)
+        x_offset_syst_values = x_max + (3.66 if channel == "2l" else 3.46)
         for k, label in enumerate(results_full["labels"]):
             ax.text(
-                x_max + 0.85,
+                x_offset_values,
                 y_pos[k],
-                f"{results_full['bestfit'][k]:.2f}",
+                f"{results_full['bestfit'][k]: >5.2f}",  # if instances of negative values, >5.2f will ensure the alignment
                 fontsize=21,
                 weight="bold",
                 verticalalignment="center",
@@ -674,19 +695,20 @@ class SeparatePlotter(Plotter):
                 multialignment="left",
             )
             ax.text(
-                x_max + 3.46,
+                x_offset_syst_values,
                 y_pos[k],
                 f" + {syst_err_up[k]:.2f}\n -  {syst_err_down[k]:.2f}",
                 fontsize=15,
                 verticalalignment="center",
                 multialignment="left",
             )
+
         for k, label in enumerate(inclusive_full["labels"]):
             ax.text(
-                x_max + 0.85,
+                x_offset_values,
                 inclusive_y_pos,
-                f"{inclusive_full['bestfit'][k]:.2f}",
-                fontsize=20,
+                f"{inclusive_full['bestfit'][k]: >5.2f}",
+                fontsize=21,
                 weight="bold",
                 verticalalignment="center",
             )
@@ -694,28 +716,36 @@ class SeparatePlotter(Plotter):
                 x_max + 1.75,
                 inclusive_y_pos,
                 f"+ {inclusive_full['up'][k]:.2f}\n - {inclusive_full['down'][k]:.2f}",
-                fontsize=14,
+                fontsize=15,
                 weight="bold",
                 verticalalignment="center",
-                multialignment="center",
+                multialignment="left",
             )
             ax.text(
                 x_max + 2.78,
                 inclusive_y_pos,
                 f" + {inclusive_stat['up'][k]:.2f}\n -  {inclusive_stat['down'][k]:.2f}",
-                fontsize=14,
+                fontsize=15,
                 verticalalignment="center",
                 multialignment="left",
             )
             ax.text(
-                x_max + 3.46,
+                x_offset_syst_values,
                 inclusive_y_pos,
                 f" + {inc_syst_err_up[k]:.2f}\n -  {inc_syst_err_down[k]:.2f}",
-                fontsize=14,
+                fontsize=15,
                 verticalalignment="center",
                 multialignment="left",
             )
-        ax.plot([1, 1], [ax.get_ylim()[0], n_pois - 0.2], "--", color="grey", alpha=0.6, zorder=0)
+
+        ax.plot(
+            [1, 1],
+            [ax.get_ylim()[0], n_pois - 0.2],
+            "--",
+            color="grey",
+            alpha=0.6,
+            zorder=0,
+        )
         ax.set_xlim([x_min - 0.5, x_max + 5.0])
         ax.set_ylim([-1.8, n_pois + 1.2])
         ax.tick_params(axis="both", which="major", pad=14, labelsize=12)
@@ -747,30 +777,76 @@ class SeparatePlotter(Plotter):
 
         handles, labels = ax.get_legend_handles_labels()
 
-        ax.legend(
-            handles[::-1],
-            labels[::-1],
-            frameon=False,
-            fontsize=15,
-            loc="upper right",
-            ncols=4,
-            handlelength=0.6,
-            handletextpad=0.5,
-            borderpad=0.4,
-            labelspacing=0.1,
-            bbox_to_anchor=(0.99, 0.98),
-            columnspacing=1.5,
-        )
+        if channel == "Combined":
+            ax.legend(
+                handles[::-1],
+                labels[::-1],
+                frameon=False,
+                fontsize=15,
+                loc="upper right",
+                ncols=4,
+                handlelength=0.6,
+                handletextpad=0.5,
+                borderpad=0.4,
+                labelspacing=0.1,
+                bbox_to_anchor=(0.99, 0.98),
+                columnspacing=1.5,
+            )
+        else:
+            ax.legend(
+                handles[::-1],
+                labels[::-1],
+                frameon=False,
+                fontsize=15,
+                loc="upper right",
+                ncols=4,
+                handlelength=0.6,
+                handletextpad=0.5,
+                borderpad=0.4,
+                labelspacing=0.1,
+                bbox_to_anchor=(0.96, 0.98),
+                columnspacing=1.5,
+            )
 
-        mplhep.atlas.text(ax=ax, loc=4, fontsize=18,) # text="Internal")
+        if channel == "Combined":
+            mplhep.atlas.text(ax=ax, loc=4, fontsize=18, text="Internal")
+        else:
+            mplhep.atlas.text(ax=ax, loc=0, fontsize=18, text="Internal")
 
-        ax.text(
-            -0.38,
-            5.9,
-            r"$\sqrt{s}\, =\, 13\,TeV,\, 140\, fb^{-1},\,m_{H}=125.09\, \text{GeV}$",
-            fontsize=17,
-            style="normal",
-        )
+        if channel == "1l":
+            ax.text(
+                -0.38,
+                6.43,
+                "Single lepton",
+                fontsize=18,
+                style="normal",
+            )
+
+        if channel == "2l":
+            ax.text(
+                -2.45,
+                6.43,
+                "Dilepton",
+                fontsize=18,
+                style="normal",
+            )
+
+        if channel == "Combined" or channel == "1l":
+            ax.text(
+                -0.38,
+                5.9,
+                r"$\sqrt{s}\, =\, 13\,TeV,\, 140\, fb^{-1},\,m_{H}=125.09\, \text{GeV}$",
+                fontsize=17,
+                style="normal",
+            )
+        else:
+            ax.text(
+                -2.45,
+                5.9,
+                r"$\sqrt{s}\, =\, 13\,TeV,\, 140\, fb^{-1},\,m_{H}=125.09\, \text{GeV}$",
+                fontsize=17,
+                style="normal",
+            )
 
 
 def main(config_path, output_format, separate):
