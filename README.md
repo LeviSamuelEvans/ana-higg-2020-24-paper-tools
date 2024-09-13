@@ -8,4 +8,4 @@ This repository contains both scripts for some plots in the full Run-2 legacy $t
 - `poi_corr.py:` A script to plot the correlations between the parameters of interest.
 
 --------
-<img src="path/to/image.jpg" width="10%" alt="Half-size Image"> Migration.
+<img src="144_Gitlab_logo_logos-512.webp" width="10%" alt="Half-size Image"> Migration.
